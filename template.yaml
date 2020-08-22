@@ -1,3 +1,59 @@
-AWSTemplateFormatVersion: '2010-09-09'
-Transform: 'AWS::Serverless-2016-10-31'
-Resources: {}
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  foodTruckApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub
+        - ${ResourceName} From Stack ${StackTagName} Environment ${EnvironmentTagName}
+        - ResourceName: foodTruckApi
+      StageName: !Ref EnvironmentAPIGatewayStageName
+      DefinitionBody:
+        swagger: '2.0'
+        info: {}
+        paths:
+          /order:
+            get:
+              responses: {}
+            post:
+              responses: {}
+          /order/{orderId}:
+            get:
+              responses: {}
+            put:
+              responses: {}
+          /menuItem:
+            post:
+              responses: {}
+            get:
+              responses: {}
+          /menuItem/{menuItemId}:
+            get:
+              responses: {}
+            put:
+              responses: {}
+          /account:
+            post:
+              responses: {}
+            get:
+              responses: {}
+          /account/{userId}:
+            get:
+              responses: {}
+            put:
+              responses: {}
+      EndpointConfiguration: REGIONAL
+      TracingEnabled: true
+      Cors:
+        AllowHeaders: '''Authorization,Content-Type'''
+        AllowOrigin: '''*'''
+Parameters:
+  StackTagName:
+    Type: String
+    Description: Stack Name (injected by Stackery at deployment time)
+  EnvironmentTagName:
+    Type: String
+    Description: Environment Name (injected by Stackery at deployment time)
+  EnvironmentAPIGatewayStageName:
+    Type: String
+    Description: Environment name used for API Gateway Stage names (injected by Stackery at deployment time)

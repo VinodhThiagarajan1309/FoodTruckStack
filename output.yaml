@@ -1,0 +1,329 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  foodTruckApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name:
+        Fn::Sub:
+        - ${ResourceName} From Stack ${StackTagName} Environment ${EnvironmentTagName}
+        - ResourceName: foodTruckApi
+      StageName:
+        Ref: EnvironmentAPIGatewayStageName
+      DefinitionBody:
+        swagger: '2.0'
+        info: {}
+        paths:
+          /order:
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${foodTruckOrderCrudFunction.Arn}/invocations
+              responses: {}
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${foodTruckOrderCrudFunction.Arn}/invocations
+              responses: {}
+          /order/{orderId}:
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${foodTruckOrderCrudFunction.Arn}/invocations
+              responses: {}
+            put:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${foodTruckOrderCrudFunction.Arn}/invocations
+              responses: {}
+          /menuItem:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${foodTruckMenuItemCrudFunction.Arn}/invocations
+              responses: {}
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${foodTruckMenuItemCrudFunction.Arn}/invocations
+              responses: {}
+          /menuItem/{menuItemId}:
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${foodTruckMenuItemCrudFunction.Arn}/invocations
+              responses: {}
+            put:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${foodTruckMenuItemCrudFunction.Arn}/invocations
+              responses: {}
+          /account:
+            post:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${foodTruckAccountsCrudFunction.Arn}/invocations
+              responses: {}
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${foodTruckAccountsCrudFunction.Arn}/invocations
+              responses: {}
+          /account/{userId}:
+            get:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${foodTruckAccountsCrudFunction.Arn}/invocations
+              responses: {}
+            put:
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri:
+                  Fn::Sub: arn:${AWS::Partition}:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${foodTruckAccountsCrudFunction.Arn}/invocations
+              responses: {}
+      EndpointConfiguration: REGIONAL
+      TracingEnabled: true
+      Cors:
+        AllowHeaders: '''Authorization,Content-Type'''
+        AllowOrigin: '''*'''
+  foodTruckOrderCrudFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-foodTruckOrderCrudFunct
+      Description:
+        Fn::Sub:
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: foodTruckOrderCrudFunction
+      CodeUri: s3://stackery-stack/ae55ccb4cda1a7df5dce2656f033a9f9
+      Handler: index.handler
+      Runtime: nodejs12.x
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+      - AWSXrayWriteOnlyAccess
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: foodTruckOrdersTable
+      Events:
+        foodTruckApiGETorderorderId:
+          Type: Api
+          Properties:
+            Path: /order/{orderId}
+            Method: GET
+            RestApiId:
+              Ref: foodTruckApi
+        foodTruckApiPOSTorder:
+          Type: Api
+          Properties:
+            Path: /order
+            Method: POST
+            RestApiId:
+              Ref: foodTruckApi
+        foodTruckApiPUTorderorderId:
+          Type: Api
+          Properties:
+            Path: /order/{orderId}
+            Method: PUT
+            RestApiId:
+              Ref: foodTruckApi
+        foodTruckApiGETorder:
+          Type: Api
+          Properties:
+            Path: /order
+            Method: GET
+            RestApiId:
+              Ref: foodTruckApi
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: foodTruckOrdersTable
+          TABLE_ARN:
+            Fn::GetAtt:
+            - foodTruckOrdersTable
+            - Arn
+  foodTruckAccountsCrudFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-foodTruckAccountsCrudFu
+      Description:
+        Fn::Sub:
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: foodTruckAccountsCrudFunction
+      CodeUri: s3://stackery-stack/e2826b570efea11fcb2b6375e31f7e28
+      Handler: index.handler
+      Runtime: nodejs12.x
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+      - AWSXrayWriteOnlyAccess
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: foodTruckAccountsTable
+      Events:
+        foodTruckApiGETaccount:
+          Type: Api
+          Properties:
+            Path: /account
+            Method: GET
+            RestApiId:
+              Ref: foodTruckApi
+        foodTruckApiGETaccountuserId:
+          Type: Api
+          Properties:
+            Path: /account/{userId}
+            Method: GET
+            RestApiId:
+              Ref: foodTruckApi
+        foodTruckApiPOSTaccount:
+          Type: Api
+          Properties:
+            Path: /account
+            Method: POST
+            RestApiId:
+              Ref: foodTruckApi
+        foodTruckApiPUTaccountuserId:
+          Type: Api
+          Properties:
+            Path: /account/{userId}
+            Method: PUT
+            RestApiId:
+              Ref: foodTruckApi
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: foodTruckAccountsTable
+          TABLE_ARN:
+            Fn::GetAtt:
+            - foodTruckAccountsTable
+            - Arn
+  foodTruckMenuItemCrudFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName:
+        Fn::Sub: ${AWS::StackName}-foodTruckMenuItemCrudFu
+      Description:
+        Fn::Sub:
+        - Stack ${StackTagName} Environment ${EnvironmentTagName} Function ${ResourceName}
+        - ResourceName: foodTruckMenuItemCrudFunction
+      CodeUri: s3://stackery-stack/4840a7959f4a226ae9de433dffd0e17c
+      Handler: index.handler
+      Runtime: nodejs12.x
+      MemorySize: 3008
+      Timeout: 30
+      Tracing: Active
+      Policies:
+      - AWSXrayWriteOnlyAccess
+      - DynamoDBCrudPolicy:
+          TableName:
+            Ref: foodTruckMenuItemsTable
+      Events:
+        foodTruckApiGETmenuItem:
+          Type: Api
+          Properties:
+            Path: /menuItem
+            Method: GET
+            RestApiId:
+              Ref: foodTruckApi
+        foodTruckApiPUTmenuItemmenuItemId:
+          Type: Api
+          Properties:
+            Path: /menuItem/{menuItemId}
+            Method: PUT
+            RestApiId:
+              Ref: foodTruckApi
+        foodTruckApiGETmenuItemmenuItemId:
+          Type: Api
+          Properties:
+            Path: /menuItem/{menuItemId}
+            Method: GET
+            RestApiId:
+              Ref: foodTruckApi
+        foodTruckApiPOSTmenuItem:
+          Type: Api
+          Properties:
+            Path: /menuItem
+            Method: POST
+            RestApiId:
+              Ref: foodTruckApi
+      Environment:
+        Variables:
+          TABLE_NAME:
+            Ref: foodTruckMenuItemsTable
+          TABLE_ARN:
+            Fn::GetAtt:
+            - foodTruckMenuItemsTable
+            - Arn
+  foodTruckAccountsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: userId
+        AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+      - AttributeName: userId
+        KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+  foodTruckMenuItemsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: menuItemId
+        AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+      - AttributeName: menuItemId
+        KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+  foodTruckOrdersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+      - AttributeName: orderId
+        AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+      - AttributeName: orderId
+        KeyType: HASH
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+Parameters:
+  StackTagName:
+    Type: String
+    Description: Stack Name (injected by Stackery at deployment time)
+  EnvironmentTagName:
+    Type: String
+    Description: Environment Name (injected by Stackery at deployment time)
+  EnvironmentAPIGatewayStageName:
+    Type: String
+    Description: Environment name used for API Gateway Stage names (injected by Stackery
+      at deployment time)

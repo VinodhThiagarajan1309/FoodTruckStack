@@ -9,7 +9,7 @@ Resources:
         - ResourceName: foodTruckApi
       StageName: !Ref EnvironmentAPIGatewayStageName
       DefinitionBody:
-        swagger: '3.0'
+        swagger: '2.0'
         info: {}
         paths:
           /order:
